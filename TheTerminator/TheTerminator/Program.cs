@@ -11,7 +11,7 @@ namespace TheTerminator
         static void Main(string[] args)
         {
 #if DEBUG
-            Davin();
+            Weston();
 #else
             Weston();
 #endif
@@ -19,7 +19,8 @@ namespace TheTerminator
 
         static string PSScript()
         {
-            return @"param (
+            return @"{
+                    param (
                     $svr, #this is the name of the server
                     $stop1, #starting or stopping services (this should always be start or stop)
                     $svcs1, #services are we starting/stopping (string array)
@@ -113,7 +114,8 @@ namespace TheTerminator
                                     }      
                                 } 
 
-                }";
+                }
+}";
         }
     }
 }

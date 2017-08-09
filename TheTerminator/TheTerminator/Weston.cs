@@ -10,96 +10,105 @@ namespace TheTerminator
     {
         static void Weston()
         {
-            int maxThreads = 0;
-            List<string> processes = null, servers = null, args = Environment.GetCommandLineArgs().ToList();
+            int maxThreads = 50;
+            List<string> processes = new List<string>() { "notepad" }, services = new List<string>() { "OpenVPNServiceInteractive" }, servers = new List<string>() { "192.168.3.70" }, args = Environment.GetCommandLineArgs().ToList();
             bool wmi = false;
             #region "Command line args"
-            args.RemoveAt(0);
+            //args.RemoveAt(0);
 
-            for (ushort cntr = 1; cntr <= args.Count; ++cntr)
-            {
-                string arg = args[cntr++];
+            //for (ushort cntr = 1; cntr <= args.Count; ++cntr)
+            //{
+            //    string arg = args[cntr++];
 
-                switch (arg)
-                {
-                    case "-threads":
-                        try
-                        { maxThreads = int.Parse(args[cntr]); }
-                        catch (FormatException)
-                        { Console.WriteLine("Expected integer number of threads."); }
-                        break;
+            //    switch (arg)
+            //    {
+            //        case "-threads":
+            //            try
+            //            { maxThreads = int.Parse(args[cntr]); }
+            //            catch (FormatException)
+            //            { Console.WriteLine("Expected integer number of threads."); }
+            //            break;
 
-                    case "-wmi":
-                        wmi = true;
-                        --cntr;
-                        break;
+            //        case "-wmi":
+            //            wmi = true;
+            //            --cntr;
+            //            break;
 
-                    case "-processes":
-                        processes = new List<string>();
-                        while (!(args[cntr] ?? "-").StartsWith("-"))
-                        {
-                            processes.Add(args[cntr]);
-                            ++cntr;
-                        }
-                        break;
+            //        case "-processes":
+            //            processes = new List<string>();
+            //            while (!(args[cntr] ?? "-").StartsWith("-"))
+            //            {
+            //                processes.Add(args[cntr]);
+            //                ++cntr;
+            //            }
+            //            break;
 
-                    case "-servers":
-                        servers = new List<string>();
-                        while (!(args[cntr] ?? "-").StartsWith("-"))
-                        {
-                            servers.Add(args[cntr]);
-                            ++cntr;
-                        }
-                        break;
+            //        case "-services":
+            //            services = new List<string>();
+            //            while (!(args[cntr] ?? "-").StartsWith("-"))
+            //            {
+            //                services.Add(args[cntr]);
+            //                ++cntr;
+            //            }
+            //            break;
 
-                    default:
-                        throw new ArgumentException($"Unexpected argument {arg}");
-                }
-            }
+            //        case "-servers":
+            //            servers = new List<string>();
+            //            while (!(args[cntr] ?? "-").StartsWith("-"))
+            //            {
+            //                servers.Add(args[cntr]);
+            //                ++cntr;
+            //            }
+            //            break;
 
-            if (maxThreads == 0)
-            {
-                maxThreadsLoop:
-                try
-                {
-                    Console.Write("Max # of threads: ");
-                    maxThreads = int.Parse(Console.ReadLine());
-                }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Expected integer number of threads.");
-                    goto maxThreadsLoop;
-                }
-            }
+            //        default:
+            //            throw new ArgumentException($"Unexpected argument {arg}");
+            //    }
+            //}
 
-            if (processes == null)
-            {
-                Console.WriteLine("List of porcesses to kill pressing enter after each. Press enter twice to finish.");
-                processes = new List<string>();
-                do
-                {
-                    Console.Write($"\tProcess {processes.Count + 1}: ");
-                    processes.Add(Console.ReadLine());
-                } while (!string.IsNullOrEmpty(processes.Last()));
-                servers.Remove(processes.Last());
-            }
+            //if (maxThreads == 0)
+            //{
+            //    maxThreadsLoop:
+            //    try
+            //    {
+            //        Console.Write("Max # of threads: ");
+            //        maxThreads = int.Parse(Console.ReadLine());
+            //    }
+            //    catch (FormatException)
+            //    {
+            //        Console.WriteLine("Expected integer number of threads.");
+            //        goto maxThreadsLoop;
+            //    }
+            //}
 
-            if (servers == null)
-            {
-                Console.WriteLine("List server names pressing enter after each. Press enter twice to finish.");
-                servers = new List<string>();
-                do
-                {
-                    Console.Write($"\tServer {servers.Count + 1}: ");
-                    servers.Add(Console.ReadLine());
-                } while (!string.IsNullOrEmpty(servers.Last()));
-                servers.Remove(servers.Last());
-            }
+            //if (processes == null)
+            //{
+            //    Console.WriteLine("List of porcesses to kill pressing enter after each. Press enter twice to finish.");
+            //    processes = new List<string>();
+            //    do
+            //    {
+            //        Console.Write($"\tProcess {processes.Count + 1}: ");
+            //        processes.Add(Console.ReadLine());
+            //    } while (!string.IsNullOrEmpty(processes.Last()));
+            //    servers.Remove(processes.Last());
+            //}
+
+            //if (servers == null)
+            //{
+            //    Console.WriteLine("List server names pressing enter after each. Press enter twice to finish.");
+            //    servers = new List<string>();
+            //    do
+            //    {
+            //        Console.Write($"\tServer {servers.Count + 1}: ");
+            //        servers.Add(Console.ReadLine());
+            //    } while (!string.IsNullOrEmpty(servers.Last()));
+            //    servers.Remove(servers.Last());
+            //}
             #endregion
 
             RunspacePool rsPool = RunspaceFactory.CreateRunspacePool(1, maxThreads);
             rsPool.Open();
-            List<RSInstanceOutput> Output = new List<RSInstanceOutput>();
+            List<PSObject> Output = new List<PSObject>();
 
             if (wmi)
             { throw new NotImplementedException(); }
@@ -107,18 +116,18 @@ namespace TheTerminator
             {
                 foreach (string server in servers)
                 {
-                    foreach (string process in processes)
-                    {
-                        PowerShell PSinstance = PowerShell.Create().AddScript($@".\pskill -accepteula -nobanner -t \\{server} -u T2\admin -p T2Temp1611 {process}");
-                        PSinstance.RunspacePool = rsPool;
+                    PowerShell PSinstance = PowerShell.Create().AddScript(PSScript()).AddArgument(server).AddArgument("stop").AddArgument(services.ToArray()).AddArgument(processes.ToArray()).AddArgument(""); // servername, start/stop, services, processes, startmode
+                    PSinstance.RunspacePool = rsPool;
 
-                        Output.Add(new RSInstanceOutput
-                        {
-                            Server = server,
-                            Pipe = PSinstance,
-                            Result = PSinstance.BeginInvoke()
-                        });
-                    }
+                    RSInstanceOutput obj = new RSInstanceOutput()
+                    {
+                        Server = server,
+                        Pipe = PSinstance,
+                        Result = PSinstance.BeginInvoke()
+                    };
+                    PSObject outputBlock = new PSObject(obj);
+
+                    Output.Add(outputBlock);
                 }
 
                 rsPool.Close();

@@ -1,4 +1,6 @@
-﻿namespace TheTerminator
+﻿
+
+namespace TheTerminator
 {
     partial class Program
     {

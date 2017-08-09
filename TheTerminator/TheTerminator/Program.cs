@@ -10,8 +10,8 @@ namespace TheTerminator
     {
         static void Main(string[] args)
         {
-
-            string script = PSScript();
+            Davin();
+            Weston();
         }
 
         static string PSScript()

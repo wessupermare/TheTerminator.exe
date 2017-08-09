@@ -1,0 +1,3 @@
+Put in the name of the services to kill.  If not sure, open Services.msc and right-click the service and put the name here.  No need to put quotes around names with spaces in them.
+Remove these lines (above and below) and put only one per line.  For Background Intellegent Transfer Service, use:
+BITS
